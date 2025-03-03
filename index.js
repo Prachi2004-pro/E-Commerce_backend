@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
-const cors = require("cors");
+const cors = require("cors"); //to provide the access to react project
 const { type } = require("os");
 const { error } = require("console");
 
@@ -240,8 +240,31 @@ const fetchUser = async (req,res,next) => {
 
 //Creating endpoint for adding products in cartdata
 app.post('/addtocart',fetchUser,async (req,res) => {
-    // console.log(req.body,req.user);
-    let userData = await Users.findOne({})
+    console.log("Added",req.body,req.user);
+    let userData = await Users.findOne({_id:req.user.id});
+    userData.cartData[req.body.itemId] += 1;
+    //save data in mongodb database
+    await Users.findOneAndUpdate({_id:req.user.id},{cartData:userData.cartData});
+    res.send("Added")
+})
+
+// Creating endpoint to remove product from cartData
+app.post('/removefromcart',fetchUser,async (req,res) => {
+    console.log("removed",req.body.itemId);
+    let userData = await Users.findOne({_id:req.user.id});
+    if(userData.cartData[req.body.itemId]>0)
+    userData.cartData[req.body.itemId] -= 1;
+    //save data in mongodb database
+    await Users.findOneAndUpdate({_id:req.user.id},{cartData:userData.cartData});
+    res.send("Removed")
+})
+
+//Creating endpoint to get cartData
+app.post('/getcartitems',fetchUser,async (req,res) => {
+    console.log("Get Cart Items");
+    let userData = await Users.findOne({_id:req.user.id});
+    res.json(userData.cartData);
+
 })
 
 app.listen(port,(error)=>{

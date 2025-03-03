@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo 'No tests defined' && exit 0",
+    "start": "node server.js",
+    "build": "react-scripts build"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +15,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.0",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "react-scripts": "^5.0.1"
   }
 }
