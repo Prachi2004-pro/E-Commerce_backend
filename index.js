@@ -37,7 +37,7 @@ app.use('/Images',express.static('upload/Images'));
 app.post("/upload",upload.single('product'),(req,res)=>{
     res.json({
         success:1,
-        image_url:`http://localhost:${port}/Images/${req.file.filename}`
+        image_url:`https://e-commerce-backend-59ko.onrender.com/Images/${req.file.filename}`
     })
 })
 
