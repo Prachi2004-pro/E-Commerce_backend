@@ -1,4 +1,4 @@
-const port = 4000;
+const port = process.env.PORT || 4000;
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -8,38 +8,56 @@ const path = require("path");
 const cors = require("cors"); //to provide the access to react project
 const { type } = require("os");
 const { error } = require("console");
+require('dotenv').config();
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
-//Database connection with mongodb
-mongoose.connect("mongodb+srv://Ecommerce:Ecommerce@cluster0.o1qiu.mongodb.net/e-commerce");
+// Database Connection
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => console.log("MongoDB Connected"))
+.catch((err) => console.log("MongoDB Connection Error:", err));
+
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Set up Multer Storage for Cloudinary
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: 'ecommerce-images',
+        format: async (req, file) => "png", // Convert to PNG
+        public_id: (req, file) => `${Date.now()}-${file.originalname}`
+    },
+});
+const upload = multer({ storage });
 
 //API creation
 app.get("/",(req,res)=>{
     res.send("Express App is Running")
-})
-
-// Image Storage Engine
-const storage = multer.diskStorage({
-    destination: './upload/Images',
-    filename: (req,file,cb)=>{
-        return cb(null,`${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`);
-    }
-})
-
-const upload = multer({storage:storage});
+});
 
 //Creating Upload Endpoint for images
-app.use('/Images',express.static('upload/Images'));
+// app.use('/Images',express.static('upload/Images'));
 
-app.post("/upload",upload.single('product'),(req,res)=>{
-    res.json({
-        success:1,
-        image_url:`https://e-commerce-backend-59ko.onrender.com/Images/${req.file.filename}`
-    })
-})
+app.post("/upload", upload.single("product"), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: "File upload failed" });
+    }
+    res.json({ 
+        success: true, 
+        image_url: req.file.path });
+});
 
 //schema for creating products
 const Product = mongoose.model("Product",{
