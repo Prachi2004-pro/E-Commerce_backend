@@ -12,6 +12,8 @@ const { error } = require("console");
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
+console.log("Dotenv loaded successfully");
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
