@@ -1,3 +1,4 @@
+require('dotenv').config();
 const port = process.env.PORT || 4000;
 const express = require("express");
 const app = express();
@@ -8,7 +9,6 @@ const path = require("path");
 const cors = require("cors"); //to provide the access to react project
 const { type } = require("os");
 const { error } = require("console");
-require('dotenv').config();
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
