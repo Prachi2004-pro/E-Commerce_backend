@@ -39,26 +39,49 @@ const storage = new CloudinaryStorage({
     params: {
         folder: 'ecommerce-images',
         format: async (req, file) => "png", // Convert to PNG
-        public_id: (req, file) => `${Date.now()}-${file.originalname}`
+        public_id: (req, file) => `${Date.now()}-${file.originalname.split('.')[0]}`,
+        transformation: [
+            { width: 500, height: 500, crop: "limit" }
+        ]
     },
 });
-const upload = multer({ storage });
+const upload = multer({ 
+    storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
+    }
+});
 
 //API creation
 app.get("/",(req,res)=>{
     res.send("Express App is Running")
 });
 
-//Creating Upload Endpoint for images
-// app.use('/Images',express.static('upload/Images'));
-
+//Creating Upload Endpoint for images - FIXED VERSION
 app.post("/upload", upload.single("product"), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ success: false, message: "File upload failed" });
+    try {
+        if (!req.file) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "File upload failed - No file received" 
+            });
+        }
+
+        console.log("File uploaded successfully to Cloudinary:", req.file.path);
+        
+        // Return the Cloudinary URL, not local path
+        res.json({ 
+            success: true, 
+            image_url: req.file.path // This will be the Cloudinary URL
+        });
+    } catch (error) {
+        console.error("Upload error:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Upload failed", 
+            error: error.message 
+        });
     }
-    res.json({ 
-        success: true, 
-        image_url: req.file.path });
 });
 
 //schema for creating products
@@ -97,7 +120,7 @@ const Product = mongoose.model("Product",{
     },
 })
 
-//Creating API for deleting products
+//Creating API for adding products
 app.post('/addproduct',async(req,res)=>{
     let products = await Product.find({});
     let id;
